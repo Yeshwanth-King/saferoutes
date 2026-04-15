@@ -13,12 +13,7 @@ function getInitialTheme(): Theme {
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("dark");
-
-  useEffect(() => {
-    const nextTheme = getInitialTheme();
-    setTheme(nextTheme);
-  }, []);
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
 
   useEffect(() => {
     if (typeof document === "undefined") return;

@@ -2,6 +2,8 @@ import { POST } from "@/app/api/maps/routes/route";
 
 describe("POST /api/maps/routes", () => {
   it("returns 500 when API key is missing", async () => {
+    vi.stubEnv("GOOGLE_MAPS_API_KEY", "");
+    vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "");
     const request = new Request("http://localhost/api/maps/routes", {
       method: "POST",
       body: JSON.stringify({
@@ -15,6 +17,7 @@ describe("POST /api/maps/routes", () => {
     const body = (await response.json()) as { error: string };
     expect(response.status).toBe(500);
     expect(body.error).toContain("GOOGLE_MAPS_API_KEY");
+    vi.unstubAllEnvs();
   });
 
   it("returns directions provider data when Directions API succeeds", async () => {

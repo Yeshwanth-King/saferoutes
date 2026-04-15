@@ -273,16 +273,6 @@ export default function Home() {
     ];
   }, [routes, weatherInfo, weatherState.condition]);
 
-  const sourceLabel = useMemo(() => {
-    if (!sourcePoint) return "Not selected";
-    return `${sourcePoint.lat.toFixed(5)}, ${sourcePoint.lng.toFixed(5)}`;
-  }, [sourcePoint]);
-
-  const destinationLabel = useMemo(() => {
-    if (!destinationPoint) return "Not selected";
-    return `${destinationPoint.lat.toFixed(5)}, ${destinationPoint.lng.toFixed(5)}`;
-  }, [destinationPoint]);
-
   const applySourceCoordinates = useCallback(() => {
     const parsed = parseLatLngInput(sourceCoordinateInput);
     if (!parsed) {
