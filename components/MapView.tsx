@@ -35,6 +35,8 @@ const strokeByRouteId: Record<string, string> = {
 };
 const mapPickCursor =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ef4444' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'/%3E%3Ccircle cx='12' cy='9' r='2.5' fill='white'/%3E%3C/svg%3E\") 12 22, crosshair";
+// TEMP: hardcoded fallback for deployments without env wiring.
+const hardcodedGoogleMapsKey = "AIzaSyBEuDCN1lnNM2_0PDfHRSM3RmOqgiyxTtE";
 
 function loadGoogleMapsScript(apiKey: string): Promise<any> {
   if (typeof window === "undefined") {
@@ -192,7 +194,7 @@ export default function MapView({
     "loading",
   );
   const [routesHint, setRoutesHint] = useState<string | null>(null);
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || hardcodedGoogleMapsKey;
 
   useEffect(() => {
     if (!apiKey) return;
