@@ -23,8 +23,8 @@ import {
 
 type LatLngPoint = { lat: number; lng: number };
 
-const defaultSource: LatLngPoint = { lat: 12.9352, lng: 77.6245 };
-const defaultDestination: LatLngPoint = { lat: 12.9698, lng: 77.75 };
+const defaultSource: LatLngPoint = { lat: 12.88737, lng: 77.59742 };
+const defaultDestination: LatLngPoint = { lat: 12.88525, lng: 77.62983 };
 const WEATHER_CACHE_MS = 5 * 60 * 1000;
 
 const accidentHotspots = [
@@ -35,6 +35,8 @@ const accidentHotspots = [
   { name: "KR Puram", lat: 13.0079, lng: 77.6953 },
   { name: "Electronic City Flyover", lat: 12.8403, lng: 77.677 },
   { name: "Whitefield", lat: 12.9698, lng: 77.75 },
+  { name: "BTM 4th Stage", lat: 12.8865, lng: 77.608 },
+  { name: "Devarachikkanahalli Rd", lat: 12.8858, lng: 77.618 },
 ] as const;
 
 function haversineMeters(a: RoutePoint, b: RoutePoint): number {
@@ -154,6 +156,11 @@ export default function Home() {
   const [destinationCoordinateInput, setDestinationCoordinateInput] = useState(
     `${defaultDestination.lat.toFixed(5)}, ${defaultDestination.lng.toFixed(5)}`,
   );
+  const [sourceAddress, setSourceAddress] = useState("Resolving source address...");
+  const [destinationAddress, setDestinationAddress] = useState(
+    "Resolving destination address...",
+  );
+  const [addressLoading, setAddressLoading] = useState(false);
   const [coordinateError, setCoordinateError] = useState<string | null>(null);
   const [weatherState, setWeatherState] = useState<Weather>({
     condition: "clear",
@@ -204,6 +211,54 @@ export default function Home() {
     }, WEATHER_CACHE_MS);
     return () => window.clearInterval(timer);
   }, [refreshWeatherInBackground]);
+
+  useEffect(() => {
+    if (!sourcePoint || !destinationPoint) return;
+    let cancelled = false;
+    setAddressLoading(true);
+
+    const fetchAddress = async (
+      point: LatLngPoint,
+      setAddress: (value: string) => void,
+      fallbackLabel: string,
+    ) => {
+      try {
+        const params = new URLSearchParams({
+          lat: String(point.lat),
+          lng: String(point.lng),
+        });
+        const response = await fetch(`/api/maps/geocode?${params.toString()}`, {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          setAddress(`${fallbackLabel}: ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`);
+          return;
+        }
+        const payload = (await response.json()) as { address?: string };
+        setAddress(
+          payload.address ??
+            `${fallbackLabel}: ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`,
+        );
+      } catch {
+        setAddress(`${fallbackLabel}: ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`);
+      }
+    };
+
+    void Promise.all([
+      fetchAddress(sourcePoint, (value) => {
+        if (!cancelled) setSourceAddress(value);
+      }, "Source"),
+      fetchAddress(destinationPoint, (value) => {
+        if (!cancelled) setDestinationAddress(value);
+      }, "Destination"),
+    ]).finally(() => {
+      if (!cancelled) setAddressLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sourcePoint, destinationPoint]);
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -336,6 +391,9 @@ export default function Home() {
         }
         sourceCoordinateInput={sourceCoordinateInput}
         destinationCoordinateInput={destinationCoordinateInput}
+        sourceAddress={sourceAddress}
+        destinationAddress={destinationAddress}
+        addressLoading={addressLoading}
         coordinateError={coordinateError}
         selectionMode={selectionMode}
         onSourceCoordinateInputChange={setSourceCoordinateInput}

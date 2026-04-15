@@ -45,6 +45,7 @@ SafeRoute helps users choose safer routes between source and destination points.
 - Route fetching with provider fallback:
   - Google Directions API (primary)
   - Google Routes API (fallback)
+- Reverse geocoding of selected coordinates into human-readable addresses
 - Route card scoring and risk labeling
 - AI-style recommendation summary (rule-based text generation)
 - Turn-by-turn directions panel for best route
@@ -104,6 +105,9 @@ SafeRoute helps users choose safer routes between source and destination points.
   - calls Directions API first
   - falls back to Routes API
   - returns normalized route payload
+- `app/api/maps/geocode/route.ts`
+  - validates coordinate query input
+  - resolves coordinates into formatted addresses via Google Geocoding API
 
 ### 4.3 Shared Logic
 
@@ -239,6 +243,24 @@ Failure:
 - `500` missing Google API key
 - `502` both providers failed, with short provider error details
 
+### 8.3 `GET /api/maps/geocode?lat=<lat>&lng=<lng>`
+
+Purpose:
+- reverse geocode map-selected coordinates into user-friendly place labels
+
+Success:
+
+```json
+{
+  "address": "MG Road, Bengaluru, Karnataka, India"
+}
+```
+
+Failure:
+- `400` invalid/missing coordinates
+- `500` missing Google API key
+- `502` upstream geocode/network failure
+
 ---
 
 ## 9) Local Development
@@ -315,6 +337,7 @@ docker run -p 3000:3000 --env-file .env.local saferoute:latest
 - **Google Maps JavaScript API:** interactive map rendering and user point selection.
 - **Google Directions API:** primary route provider (including maneuver text for directions panel).
 - **Google Routes API:** fallback route provider to improve resilience.
+- **Google Geocoding API:** reverse geocoding for source/destination context in the assistant UI.
 - **Google Cloud Run (deployment target):** containerized production hosting.
 
 This usage is intentional: it combines map visualization, route intelligence, provider fallback reliability, and cloud-native deployment.

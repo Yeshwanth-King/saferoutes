@@ -20,6 +20,9 @@ type SidebarProps = {
   weatherDetail: string;
   sourceCoordinateInput: string;
   destinationCoordinateInput: string;
+  sourceAddress: string;
+  destinationAddress: string;
+  addressLoading: boolean;
   coordinateError: string | null;
   selectionMode: "source" | "destination" | null;
   onSourceCoordinateInputChange: (value: string) => void;
@@ -44,6 +47,9 @@ export default function Sidebar({
   weatherDetail,
   sourceCoordinateInput,
   destinationCoordinateInput,
+  sourceAddress,
+  destinationAddress,
+  addressLoading,
   coordinateError,
   selectionMode,
   onSourceCoordinateInputChange,
@@ -130,6 +136,9 @@ export default function Sidebar({
               ? "Click map to set Source"
               : "Pick Source on Map"}
           </button>
+          <p className="mt-1 text-[11px] text-sidebar-foreground/55" aria-live="polite">
+            {addressLoading ? "Resolving source address..." : sourceAddress}
+          </p>
         </div>
 
         <div>
@@ -168,6 +177,9 @@ export default function Sidebar({
               ? "Click map to set Destination"
               : "Pick Destination on Map"}
           </button>
+          <p className="mt-1 text-[11px] text-sidebar-foreground/55" aria-live="polite">
+            {addressLoading ? "Resolving destination address..." : destinationAddress}
+          </p>
         </div>
 
         <div className="space-y-2 pt-2">
