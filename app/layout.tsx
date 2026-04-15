@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SafeRoute",
   description: "AI-powered safety-aware route analyzer",
+  icons: {
+    icon: "/icon.webp",
+    shortcut: "/icon.webp",
+    apple: "/icon.webp",
+  },
 };
 
 export default function RootLayout({
