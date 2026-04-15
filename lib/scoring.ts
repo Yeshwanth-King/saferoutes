@@ -58,7 +58,9 @@ export function getIssues(
     }
   });
 
-  if (weather.condition !== "clear") {
+  if (weather.condition === "heavy_rain") {
+    issues.push("Storms may sharply reduce visibility");
+  } else if (weather.condition === "rain") {
     issues.push("Rain may affect visibility");
   }
 

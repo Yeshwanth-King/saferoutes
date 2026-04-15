@@ -6,6 +6,8 @@ export const accidentZones: Record<string, number> = {
   Bellandur: 18,
   Marathahalli: 17,
   "KR Puram": 15,
+  "Electronic City Flyover": 22,
+  Whitefield: 16,
 };
 
 export const routes: Route[] = [

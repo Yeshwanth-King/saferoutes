@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SafeRoute
 
-## Getting Started
+SafeRoute is an AI-assisted route safety analyzer for Bengaluru. It compares route candidates using traffic, weather, and accident hotspot signals, then recommends the safest option with an explainable score.
 
-First, run the development server:
+## Features
+
+- Live route geometry from Google APIs (`/api/maps/routes`)
+- Live weather risk from OpenWeather (`/api/weather`)
+- Rule-based route scoring and issue labels
+- Accessibility-aware UI with keyboard coordinate entry fallback
+- Development-only debug payload (hidden in production)
+
+## Tech Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Google Maps JavaScript API + Directions API + Routes API
+- OpenWeather API
+- Vitest for unit/API testing
+
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create `.env.local`:
+
+```bash
+OPENWEATHER_API_KEY=your_openweather_server_key
+OPENWEATHER_CITY=Bengaluru
+GOOGLE_MAPS_API_KEY=your_google_server_key
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_browser_key
+```
+
+3. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Google Cloud Requirements
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Enable these APIs in the same GCP project:
 
-## Learn More
+- Maps JavaScript API
+- Directions API
+- Routes API
 
-To learn more about Next.js, take a look at the following resources:
+Use separate key restrictions:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `GOOGLE_MAPS_API_KEY` (server): IP restriction or server-side usage only
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (browser): HTTP referrer restriction
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Security Notes
 
-## Deploy on Vercel
+- OpenWeather is fetched via server proxy (`/api/weather`) to avoid exposing private keys.
+- External API failures return sanitized error details.
+- Debug JSON payload is rendered only in non-production environments.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Testing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run lint:
+
+```bash
+npm run lint
+```
+
+Run tests:
+
+```bash
+npm run test
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+## Cloud Run Deployment (Example)
+
+1. Build and submit container:
+
+```bash
+gcloud builds submit --tag gcr.io/<PROJECT_ID>/saferoute
+```
+
+2. Deploy to Cloud Run:
+
+```bash
+gcloud run deploy saferoute \
+  --image gcr.io/<PROJECT_ID>/saferoute \
+  --platform managed \
+  --region <REGION> \
+  --allow-unauthenticated \
+  --set-env-vars OPENWEATHER_CITY=Bengaluru \
+  --set-secrets OPENWEATHER_API_KEY=OPENWEATHER_API_KEY:latest \
+  --set-secrets GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY:latest
+```
+
+3. Add `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` as a non-secret environment variable (browser key with strict referrer restrictions).
+
+## Project Structure
+
+- `app/page.tsx`: Main UI state and orchestration
+- `components/MapView.tsx`: Map rendering and route retrieval pipeline
+- `app/api/maps/routes/route.ts`: Google route provider proxy/fallback
+- `app/api/weather/route.ts`: OpenWeather server proxy
+- `lib/scoring.ts`: Route scoring logic
