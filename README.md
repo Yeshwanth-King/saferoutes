@@ -20,6 +20,24 @@ SafeRoute helps users choose safer routes between source and destination points.
 
 ---
 
+## 1.1) Challenge Vertical and Persona
+
+- **Chosen vertical:** Mobility and commuter safety assistant
+- **Primary persona:** Daily two-wheeler/car commuter in Bengaluru
+- **Problem context:** Users often pick the fastest route, but that can increase exposure to accident-prone roads and poor weather visibility.
+- **Assistant behavior:** Provide a practical safety-first recommendation with explainable reasoning, not just a shortest-path output.
+
+---
+
+## 1.2) Assumptions
+
+- User has internet connectivity for map and weather APIs.
+- User is traveling within areas where Google routing data is available.
+- Accident hotspot weights are domain-provided heuristics and can be tuned.
+- If live weather is unavailable, the system falls back to conservative clear-weather scoring and clearly communicates that fallback.
+
+---
+
 ## 2) Core Features
 
 - Interactive map source/destination selection
@@ -153,10 +171,6 @@ OPENWEATHER_CITY=Bengaluru
 OPENWEATHER_LAT=
 OPENWEATHER_LON=
 
-# Optional weather fallbacks
-NEXT_PUBLIC_OPENWEATHER_API_KEY=
-NEXT_PUBLIC_OPENWEATHER_CITY=
-
 # Maps (server + browser)
 GOOGLE_MAPS_API_KEY=your_google_server_key
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_browser_key
@@ -165,7 +179,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_browser_key
 ### Notes
 - `GOOGLE_MAPS_API_KEY` should be safe for server-side use (IP-restricted or private backend use).
 - `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` is exposed to browser; use strict HTTP referrer restrictions.
-- Weather route can work with either `OPENWEATHER_API_KEY` or `NEXT_PUBLIC_OPENWEATHER_API_KEY`, but server key is recommended.
+- `OPENWEATHER_API_KEY` is server-only and recommended for security.
 
 ---
 
@@ -292,6 +306,18 @@ docker run -p 3000:3000 --env-file .env.local saferoute:latest
 - Ensure all required env vars are configured in host platform.
 - Keep browser key and server key restrictions separate.
 - If hosted behind a proxy/CDN, ensure referrer restrictions still match deployed domain.
+- For Cloud Run, store server keys in Secret Manager and mount/inject them as runtime secrets.
+
+---
+
+## 11.1) Google Services Used
+
+- **Google Maps JavaScript API:** interactive map rendering and user point selection.
+- **Google Directions API:** primary route provider (including maneuver text for directions panel).
+- **Google Routes API:** fallback route provider to improve resilience.
+- **Google Cloud Run (deployment target):** containerized production hosting.
+
+This usage is intentional: it combines map visualization, route intelligence, provider fallback reliability, and cloud-native deployment.
 
 ---
 
@@ -345,3 +371,14 @@ docker run -p 3000:3000 --env-file .env.local saferoute:latest
 ## 15) License / Ownership
 
 Add your preferred license and ownership metadata here if this project is being shared publicly.
+
+---
+
+## 16) Submission Compliance Checklist
+
+- [x] Public GitHub repository
+- [x] Single branch repository (`main`)
+- [x] Repository tracked file size under 1 MB
+- [x] README includes vertical, approach, logic, assumptions, and run steps
+- [x] Google services integration is explicit and meaningful
+- [x] Security-conscious API key handling documented
